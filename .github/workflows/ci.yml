@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-verify:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lint Info.plist and entitlements
+        run: |
+          plutil -lint \
+            src/HostApp/Info.plist \
+            src/FinderExtension/Info.plist \
+            src/FinderExtension/Extension.entitlements
+
+      - name: Run ShellCheck on scripts
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck scripts/*.sh
+          else
+            echo "shellcheck not installed on runner; skipping"
+          fi
+
+      - name: Build universal bundle
+        run: ./scripts/build.sh
+
+      - name: Verify universal architectures
+        run: |
+          lipo -info build/OpenInAntigravity.app/Contents/MacOS/OpenInAntigravity
+          lipo -info build/OpenInAntigravity.app/Contents/PlugIns/AntigravityFinderSync.appex/Contents/MacOS/AntigravityFinderSync
+          lipo -verify_arch arm64 x86_64 build/OpenInAntigravity.app/Contents/MacOS/OpenInAntigravity
+          lipo -verify_arch arm64 x86_64 build/OpenInAntigravity.app/Contents/PlugIns/AntigravityFinderSync.appex/Contents/MacOS/AntigravityFinderSync
+
+      - name: Verify bundle signature
+        run: |
+          codesign --verify --deep --strict --verbose=2 build/OpenInAntigravity.app
