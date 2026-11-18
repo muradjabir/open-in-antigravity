@@ -34,10 +34,13 @@ jobs:
 
       - name: Verify universal architectures
         run: |
-          lipo -info build/OpenInAntigravity.app/Contents/MacOS/OpenInAntigravity
-          lipo -info build/OpenInAntigravity.app/Contents/PlugIns/AntigravityFinderSync.appex/Contents/MacOS/AntigravityFinderSync
-          lipo -verify_arch arm64 x86_64 build/OpenInAntigravity.app/Contents/MacOS/OpenInAntigravity
-          lipo -verify_arch arm64 x86_64 build/OpenInAntigravity.app/Contents/PlugIns/AntigravityFinderSync.appex/Contents/MacOS/AntigravityFinderSync
+          for bin in \
+            build/OpenInAntigravity.app/Contents/MacOS/OpenInAntigravity \
+            build/OpenInAntigravity.app/Contents/PlugIns/AntigravityFinderSync.appex/Contents/MacOS/AntigravityFinderSync; do
+            lipo -info "$bin"
+            lipo "$bin" -verify_arch arm64
+            lipo "$bin" -verify_arch x86_64
+          done
 
       - name: Verify bundle signature
         run: |
