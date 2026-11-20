@@ -9,6 +9,7 @@ LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchS
 echo "Unregistering Finder Sync extension..."
 pluginkit -e ignore -i "$EXT_BUNDLE_ID" 2>/dev/null || true
 pluginkit -r "$APPEX_PATH" 2>/dev/null || true
+killall AntigravityFinderSync 2>/dev/null || true
 
 if [ -x "$LSREGISTER" ] && [ -d "$APP_PATH" ]; then
     "$LSREGISTER" -u "$APP_PATH" 2>/dev/null || true

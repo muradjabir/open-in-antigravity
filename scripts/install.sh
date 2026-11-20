@@ -21,6 +21,7 @@ if [ -d "$APP_PATH" ]; then
     pluginkit -r "$APPEX_PATH" 2>/dev/null || true
     rm -rf "$APP_PATH"
 fi
+killall AntigravityFinderSync 2>/dev/null || true
 
 cp -R "$ROOT_DIR/build/OpenInAntigravity.app" "$APP_PATH"
 

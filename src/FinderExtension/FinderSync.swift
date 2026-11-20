@@ -8,7 +8,7 @@ final class FinderSync: FIFinderSync {
         let key: String
         let title: String
         let appPath: String
-        let iconResource: String
+        let icon: NSImage?
         let action: Selector
     }
 
@@ -17,20 +17,22 @@ final class FinderSync: FIFinderSync {
             key: "ide",
             title: "Open in Antigravity IDE",
             appPath: "/Applications/Antigravity IDE.app",
-            iconResource: "ide",
+            icon: Self.loadMenuIcon(resource: "ide", appPath: "/Applications/Antigravity IDE.app"),
             action: #selector(openInIDE(_:))
         ),
         TargetSpec(
             key: "hub",
             title: "Open in Antigravity",
             appPath: "/Applications/Antigravity.app",
-            iconResource: "hub",
+            icon: Self.loadMenuIcon(resource: "hub", appPath: "/Applications/Antigravity.app"),
             action: #selector(openInHub(_:))
         )
     ]
 
     override init() {
         super.init()
+        ProcessInfo.processInfo.automaticTerminationSupportEnabled = true
+        ProcessInfo.processInfo.enableSuddenTermination()
         FIFinderSyncController.default().directoryURLs = [URL(fileURLWithPath: "/")]
     }
 
@@ -50,7 +52,7 @@ final class FinderSync: FIFinderSync {
         for spec in activeTargets {
             let item = NSMenuItem(title: spec.title, action: spec.action, keyEquivalent: "")
             item.target = self
-            item.image = menuIcon(for: spec)
+            item.image = spec.icon
             menu.addItem(item)
         }
         return menu
@@ -89,10 +91,10 @@ final class FinderSync: FIFinderSync {
         return []
     }
 
-    private func menuIcon(for spec: TargetSpec) -> NSImage? {
+    private static func loadMenuIcon(resource: String, appPath: String) -> NSImage? {
         let bundle = Bundle(for: FinderSync.self)
-        let sourceImage = bundle.image(forResource: spec.iconResource)
-            ?? NSWorkspace.shared.icon(forFile: spec.appPath)
+        let sourceImage = bundle.image(forResource: resource)
+            ?? NSWorkspace.shared.icon(forFile: appPath)
         guard let resized = sourceImage.copy() as? NSImage else {
             return nil
         }
